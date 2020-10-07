@@ -3,7 +3,7 @@ var prevSearches=[];
 $("body").ready(init);
 
 
-function init(){
+function init(){    
     $("#city-search").on("submit",searchCity);
     var lastCity;
     if(lastCity=localStorage.getItem("mostRecentCity")){
@@ -21,12 +21,15 @@ function init(){
 function addToSearchHistory(city){
     var c=$("<button>").addClass("historyButton");
     c.text(city);
-    c.on("click",searchHistory);
+    // c.on("click",function(e){searchHistory(e);};
     $("#prev-searches").prepend(c);
+    c.attr("id","history-search")
+    c.on("click",searchCity);
 }
-function searchHistory(e){
-    console.log("Called from searchHistory()"+e);
-}
+// function searchHistory(e){
+//     var city=e.target.innerText;
+//     searchCity(city);
+// }
 
 // <<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<
 // <<vv>>                                                    >>vv<<
@@ -83,7 +86,6 @@ function displayUVData(response){
     $("#uv").append(newUVDiv);
 }
 
-
 // <<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<
 // <<vv>>                                                    >>vv<<
 // <<vv>> API Calls                                          >>vv<<
@@ -91,14 +93,22 @@ function displayUVData(response){
 // <<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<
 
 // searchCity
-// Called from form submission
+// Called from form submission or from History button
+// history button sends a string with the city name
+// form submission sends an event
 // Asks openWeather for the city weather and then calls
 // displayWeather once we have it
 function searchCity(e){
-    e.preventDefault();
-    console.log("Searching: "+e.currentTarget[0].value);
-    var city=e.currentTarget[0].value;
-    console.log(city);
+    _rep=e;
+    if(e.target.id==="city-search"){
+        e.preventDefault();
+        console.log("Searching: "+e.currentTarget[0].value);
+        var city=e.currentTarget[0].value;
+        console.log(city);
+    }
+    else if(e.target.id==="history-search"){
+        var city=e.target.innerText;
+    }
     var apiKey="fb387ced59c1ebda042a0c8fd0dabefe";
     var settings = {
         "async": true,
