@@ -1,3 +1,38 @@
 .search-area{
     background-color: aliceblue;
 }
+.search-history button{ 
+    border: 1px solid black;
+    border-radius: 6px;
+    width: 100%;
+    background-color: aliceblue;
+    display: block;
+}
+.date{
+    font-size: small;
+}
+.uv{
+    border-radius: 5px;
+    padding: 1px;
+    color: white;
+}
+.extreme{
+    border: 1px solid purple;
+    background-color: purple;
+}
+.very-high{
+    border: 1px solid orangered;
+    background-color: orangered;
+}
+.high{
+    border: 1px solid orange;
+    background-color: orange;
+}
+.moderate{
+    border: 1px solid goldenrod;
+    background-color: goldenrod;
+}
+.low{
+    border: 1px solid forestgreen;
+    background-color: forestgreen;
+}

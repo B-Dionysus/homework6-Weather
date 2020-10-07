@@ -1,5 +1,5 @@
 var _rep; // Temp variable for debugging, to display the api return in the console
-
+var prevSearches=[];
 $("body").ready(init);
 
 
@@ -18,28 +18,54 @@ function init(){
 // <<vv>>                                                    >>vv<<
 // <<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<
 
+function addToSearchHistory(city){
+    var c=$("<button>").addClass("historyButton");
+    c.text(city);
+    c.on("click",searchHistory);
+    $("#prev-searches").prepend(c);
+}
+function searchHistory(e){
+    console.log("Called from searchHistory()"+e);
+}
+
+// <<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<
+// <<vv>>                                                    >>vv<<
+// <<vv>> API Responses                                      >>vv<<
+// <<vv>>                                                    >>vv<<
+// <<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<
 // displayWeatherData()
 // Fills in the weather data for the selected city, and stores
 // the city in localStorage. Then it calls searchUV
 function displayWeatherData(response){
+    _rep=response;
     var currentTemp=Math.floor((response.main.temp-273.15)*(9/5)+32);
     var currentHumid=response.main.humidity;
     var currentWind=response.wind.speed;
     var lat=response.coord.lat;
     var lon=response.coord.lon;
-    // var currentUV=response.
+    
+    $("#city-header").text(response.name+", "+response.sys.country);
+    $("#date-header").text(" ("+moment().format("MM/DD/YYYY")+")");
     var temp=$("#temperature").html("Temperature: "+currentTemp+"&deg;F");
     var humid=$("#humidity").text("Humidity: "+currentHumid+"%");
     var wind=$("#wind").text("Wind Speed: "+currentWind+"MPH");
 
-    localStorage.setItem("mostRecentCity",response.name)
-
+    localStorage.setItem("mostRecentCity",response.name);
+    // If the city is already in the array, take it out. We want to make sure the most recent 
+    // addition is at the top.
+    var cityIndex=prevSearches.indexOf(response.name);
+    if(cityIndex!=-1)
+        prevSearches.splice(cityIndex,1);
+    prevSearches.push(response.name);
+    // Populate the search history  
+    $("#prev-searches").html("");
+    for(city of prevSearches){
+        addToSearchHistory(city);
+    }
     searchUV(lat, lon);
 }
 
 function displayUVData(response){
-    _rep=response;
-    console.log(response);
     var uv=response.value;
     var uvClass="";
     // The World Health Orginzation has five categories for UV severity
@@ -50,8 +76,10 @@ function displayUVData(response){
     else if(uv>=3) uvClass="moderate";
     else if(uv>=1) uvClass="low";
     else uvClass="unknown";
-    var newUVDiv=$("<span>").addClass(uvClass);
+    var newUVDiv=$("<span>").addClass("uv "+uvClass);
     newUVDiv.text(uv);
+    
+    $("#uv").html("UV Index:&nbsp");
     $("#uv").append(newUVDiv);
 }
 
@@ -68,7 +96,7 @@ function displayUVData(response){
 // displayWeather once we have it
 function searchCity(e){
     e.preventDefault();
-    console.log(e.currentTarget[0].value);
+    console.log("Searching: "+e.currentTarget[0].value);
     var city=e.currentTarget[0].value;
     console.log(city);
     var apiKey="fb387ced59c1ebda042a0c8fd0dabefe";

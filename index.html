@@ -26,6 +26,7 @@
     <script src="https://kit.fontawesome.com/a86abafd67.js" crossorigin="anonymous"></script>
         
         <!-- Moment, for time manipulations -->
+        <!-- Maybe a bit of overkill, just to print today's date? -->
         <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.24.0/moment.min.js"></script>  
           <!-- My stylesheet -->
         <link rel="stylesheet" href="./css/style.css">
@@ -40,7 +41,7 @@
                 <form action="#"  id="city-search">
                     <input type="text"><button type="submit"><i class="fas fa-search-location"></i></button>
                 </form>
-                <div id="searchHistory" class="search-history">
+                <div id="prev-searches" class="search-history">
                 </div>                
             </div>
             <div class="col-1"></div>
@@ -49,13 +50,13 @@
                 <div class="row border p-4">
                     <div class="col-12">
                         <div class="row">
-                            <h2><span id="city-header">City Name </span><span id="date">Date</span></h2>
+                            <h2><span id="city-header">City Name </span><span id="date-header" class="date">Date</span></h2>
                         </div>
                         <div id="weather-report-container" class="">
                             <div id="temperature" class="weather-report row"></div>
                             <div id="humidity" class="weather-report row"></div>
                             <div id="wind" class="weather-report row"></div>
-                            <div id="uv" class="weather-report row">UV Index: </div>
+                            <div id="uv" class="weather-report row"></div>
                         </div>
                     </div>
                 </div>
