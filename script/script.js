@@ -9,8 +9,7 @@ function init(){
     if(lastCity=localStorage.getItem("mostRecentCity")){
         $("#city-search")[0][0].value=lastCity;
         $("#city-search").submit();
-    }
-    
+    } 
 }
 // <<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<
 // <<vv>>                                                    >>vv<<
@@ -40,7 +39,6 @@ function addToSearchHistory(city){
 // Fills in the weather data for the selected city, and stores
 // the city in localStorage. Then it calls searchUV
 function displayWeatherData(response){
-    _rep=response;
     var currentTemp=Math.floor((response.main.temp-273.15)*(9/5)+32);
     var currentHumid=response.main.humidity;
     var currentWind=response.wind.speed;
@@ -66,6 +64,7 @@ function displayWeatherData(response){
         addToSearchHistory(city);
     }
     searchUV(lat, lon);
+    search5Day(lat, lon);
 }
 
 function displayUVData(response){
@@ -85,7 +84,23 @@ function displayUVData(response){
     $("#uv").html("UV Index:&nbsp");
     $("#uv").append(newUVDiv);
 }
+function displayForecast(response){
+    $("#forecast-container").html("");
+    for(var i=0;i<5;i++){
+        forecast=response.daily[i];
+        var date=moment(forecast.dt*1000).format('MM/DD/YYYY');
+        var temp=Math.floor((forecast.temp.day-273.15)*(9/5)+32);
+        var humid=forecast.humidity;
+        var icon=forecast.weather[0].main;
+        var thisDay=$("<div>").addClass("forecast-box");
+        thisDay.append($("<p>").html("<strong>"+date+"</strong>"));
+        thisDay.append($("<p>").text(icon));
+        thisDay.append($("<p>").html("Temperature: "+temp+"&deg;F"));
+        thisDay.append($("<p>").text("Humidity: "+humid+"%"));
 
+        $("#forecast-container").append(thisDay);
+    }
+}
 // <<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<
 // <<vv>>                                                    >>vv<<
 // <<vv>> API Calls                                          >>vv<<
@@ -99,7 +114,6 @@ function displayUVData(response){
 // Asks openWeather for the city weather and then calls
 // displayWeather once we have it
 function searchCity(e){
-    _rep=e;
     if(e.target.id==="city-search"){
         e.preventDefault();
         console.log("Searching: "+e.currentTarget[0].value);
@@ -135,6 +149,23 @@ function searchUV(lat, lon){
     }    
     $.ajax(settings).done(function (response) {
         displayUVData(response);
+    });
+}
+// search5Day
+// Called from displayWeatherData, which passes the city
+// name here. This gets the five-day forecast, and then
+// calls displayForecast() when it has it.
+function search5Day(lat, lon){
+    
+    var apiKey="fb387ced59c1ebda042a0c8fd0dabefe";
+    var settings = {
+        "async": true,
+        "crossDomain": true,
+        "url": "https://api.openweathermap.org/data/2.5/onecall?lat="+lat+"&lon="+lon+"&exclude=current,minutely,hourly,alerts&appid="+apiKey,
+        "method": "GET"
+    }    
+    $.ajax(settings).done(function (response) {
+        displayForecast(response);
     });
 }
 
