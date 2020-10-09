@@ -47,10 +47,13 @@
             <!-- <div class="col-1"></div> -->
             <div class="col-9">
                 <!-- The results display -->
-                <div class="row border p-4">
-                    <div class="col-12">
+                <div class="row border p-1 results">
+                    <div class="col-5">
                         <div class="row">
-                            <h2><span id="city-header">City Name </span><span id="date-header" class="date">Date</span></h2>
+                            <h2><span id="city-header">City Name </span><span id="icon-header" class="icon"></span></h2>
+                        </div>
+                        <div class="row">
+                            <h5><span id="date-header" class="date">Date</span></h5>
                         </div>
                         <div id="weather-report-container" class="">
                             <div id="temperature" class="weather-report row"></div>
@@ -59,9 +62,11 @@
                             <div id="uv" class="weather-report row"></div>
                         </div>
                     </div>
+                    <div class="col-7" id="forecast-compare">
+                    </div>
                 </div>
-                <div class="row">
-                    <h3>5-Day Forecast</h3>
+                <div class="row forecast p-1 border">
+                    <h3 class="forecast-head">5-Day Forecast</h3>
                     <div class="container" id="forecast-container">
 
                     </div>

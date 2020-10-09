@@ -1,16 +1,40 @@
 var _rep; // Temp variable for debugging, to display the api return in the console
 var prevSearches=[];
+var foreignLat;
+var foreignLon;
+var userLon;
+var userLat;
+var foreignTemp; // What temperature is it where the user is looking?
+var foreignW; // What's the weather like where the user is looking?
 $("body").ready(init);
 
 
-function init(){    
+function init(){ 
+
+    // Also, just for fun, we can load up the weather in whatever city
+    // the user is in right now.
+    window.navigator.geolocation.getCurrentPosition(getUserCity);
+}
+
+function getUserCity(position){  
+    // When the user clicks the #city-search button, call searchCity() 
     $("#city-search").on("submit",searchCity);
+    userLon=position.coords.longitude;
+    userLat=position.coords.latitude;    
+    
+    // If the user has done a search previously, then it will be
+    // stores in localStorage. If so, we should go ahead and load
+    // it as soon as the user opens the page.
     var lastCity;
     if(lastCity=localStorage.getItem("mostRecentCity")){
         $("#city-search")[0][0].value=lastCity;
         $("#city-search").submit();
     } 
+    //searchUserCity(userLon, userLat);
 }
+
+
+
 // <<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<
 // <<vv>>                                                    >>vv<<
 // <<vv>> UI Update Functions                                >>vv<<
@@ -29,7 +53,9 @@ function addToSearchHistory(city){
 //     var city=e.target.innerText;
 //     searchCity(city);
 // }
-
+function fromKelvin(temp){
+    return Math.floor((temp-273.15)*(9/5)+32);
+}
 // <<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<
 // <<vv>>                                                    >>vv<<
 // <<vv>> API Responses                                      >>vv<<
@@ -39,15 +65,23 @@ function addToSearchHistory(city){
 // Fills in the weather data for the selected city, and stores
 // the city in localStorage. Then it calls searchUV
 function displayWeatherData(response){
-    var currentTemp=Math.floor((response.main.temp-273.15)*(9/5)+32);
+    
+    $("#city-header").empty();
+    $("#date-header").empty();
+    $("#icon-header").empty();
+    foreignTemp=fromKelvin(response.main.temp);
+    foreignW=response.weather[0].main;
+    // _rep=response;
     var currentHumid=response.main.humidity;
     var currentWind=response.wind.speed;
-    var lat=response.coord.lat;
-    var lon=response.coord.lon;
-    
+    foreignLat=response.coord.lat;
+    foreignLon=response.coord.lon;
+    var icon=response.weather[0].icon;
+    icon="http://openweathermap.org/img/wn/"+icon+".png";
     $("#city-header").text(response.name+", "+response.sys.country);
     $("#date-header").text(" ("+moment().format("MM/DD/YYYY")+")");
-    var temp=$("#temperature").html("Temperature: "+currentTemp+"&deg;F");
+    $("#icon-header").append($("<img>").attr("src",icon));
+    var temp=$("#temperature").html("Temperature: "+foreignTemp+"&deg;F");
     var humid=$("#humidity").text("Humidity: "+currentHumid+"%");
     var wind=$("#wind").text("Wind Speed: "+currentWind+"MPH");
 
@@ -57,14 +91,15 @@ function displayWeatherData(response){
     var cityIndex=prevSearches.indexOf(response.name);
     if(cityIndex!=-1)
         prevSearches.splice(cityIndex,1);
-    prevSearches.push(response.name);
+        prevSearches.push(response.name);
     // Populate the search history  
-    $("#prev-searches").html("");
+    $("#prev-searches").empty();
     for(city of prevSearches){
         addToSearchHistory(city);
     }
-    searchUV(lat, lon);
-    search5Day(lat, lon);
+    searchUV(foreignLat, foreignLon);
+    search5Day(foreignLat, foreignLon);
+    searchUserCity(userLat, userLon);
 }
 
 function displayUVData(response){
@@ -83,22 +118,64 @@ function displayUVData(response){
     
     $("#uv").html("UV Index:&nbsp");
     $("#uv").append(newUVDiv);
+
 }
 function displayForecast(response){
-    $("#forecast-container").html("");
+    // _rep=response;
+    $("#forecast-container").empty();
     for(var i=0;i<5;i++){
+        var thisDay=$("<div>").addClass("forecast-box");
+        thisDay.empty();
         forecast=response.daily[i];
         var date=moment(forecast.dt*1000).format('MM/DD/YYYY');
-        var temp=Math.floor((forecast.temp.day-273.15)*(9/5)+32);
+        var temp=fromKelvin(forecast.temp.day);
         var humid=forecast.humidity;
-        var icon=forecast.weather[0].main;
-        var thisDay=$("<div>").addClass("forecast-box");
+        var icon=forecast.weather[0].icon;
+        icon="http://openweathermap.org/img/wn/"+icon+".png";
+        var lat=response.lat;
+        var lon=response.lon;
         thisDay.append($("<p>").html("<strong>"+date+"</strong>"));
-        thisDay.append($("<p>").text(icon));
+        thisDay.append($("<img>").attr("src",icon));
         thisDay.append($("<p>").html("Temperature: "+temp+"&deg;F"));
         thisDay.append($("<p>").text("Humidity: "+humid+"%"));
 
         $("#forecast-container").append(thisDay);
+    }
+}
+function displayUserCity(response){
+    $("#forecast-compare").empty();
+    var userTemp=fromKelvin(response.current.temp);
+    var userW=response.current.weather[0].main;    
+     _rep=response;
+    userLat=response.lat;
+    userLon=response.lon;
+
+    console.log("fLat="+foreignLat);
+    console.log("fLon="+foreignLon);
+    console.log("fT="+foreignTemp);
+    console.log("fW="+foreignW);
+    console.log("uLat="+userLat);
+    console.log("uLon="+userLon);
+    console.log("uT="+userTemp);
+    console.log("uW="+userW);
+    var latDiff=Math.abs(userLat-foreignLat);
+    var lonDiff=Math.abs(userLon-foreignLon);
+    console.log(latDiff);
+    console.log(lonDiff);
+    if(latDiff>.2 && lonDiff>.2){
+        var msg="";
+        console.log("Dopin' it");
+        if(foreignTemp>userTemp) msg="It's hotter there than it is here";
+        else if(foreignTemp<userTemp) msg="It's colder there than it is here"
+        else msg="It's the same temperature";
+        if(foreignW===userW) msg+=", and just as much "+userW.toLowerCase()+".";
+        else if(foreignW!=userW){
+            if(userW==="Clear")
+                msg+=", with more "+foreignW.toLowerCase()+".";
+            else  msg+=", with less "+userW.toLowerCase()+".";
+        }
+       
+        $("#forecast-compare").append($("<p>").text(msg));
     }
 }
 // <<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<<<vv>>^^^^>>vv<<
@@ -136,7 +213,7 @@ function searchCity(e){
 
 }
 // searchUV
-// Called from displayWeather, which passes the longitude
+// Called from displayWeatherData, which passes the longitude
 // and latitude here. This gets the UV index, and then
 // calls displayUVData() when it has it.
 function searchUV(lat, lon){
@@ -152,8 +229,8 @@ function searchUV(lat, lon){
     });
 }
 // search5Day
-// Called from displayWeatherData, which passes the city
-// name here. This gets the five-day forecast, and then
+// Called from displayWeatherData, which passes the lat and 
+// lon. This gets the five-day forecast, and then
 // calls displayForecast() when it has it.
 function search5Day(lat, lon){
     
@@ -166,6 +243,23 @@ function search5Day(lat, lon){
     }    
     $.ajax(settings).done(function (response) {
         displayForecast(response);
+    });
+}
+// searchUserCity
+// Called from displayWeatherData, which passes the latitude
+// and longitude here from the user's browser. We compare this to the 
+// city the user is searching, to advise them about what to expect!
+function searchUserCity(lat, lon){
+    
+    var apiKey="fb387ced59c1ebda042a0c8fd0dabefe";
+    var settings = {
+        "async": true,
+        "crossDomain": true,
+        "url": "https://api.openweathermap.org/data/2.5/onecall?lat="+lat+"&lon="+lon+"&exclude=minutely,hourly,alerts&appid="+apiKey,
+        "method": "GET"
+    }    
+    $.ajax(settings).done(function (response) {
+        displayUserCity(response);
     });
 }
 

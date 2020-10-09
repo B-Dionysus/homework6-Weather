@@ -1,5 +1,5 @@
 .search-area{
-    background-color: aliceblue;
+    background-color: cornflowerblue;
 }
 .search-history button{ 
     border: 1px solid black;
@@ -46,4 +46,11 @@
     border-radius: 5px;
     color: white;
     font-size: smaller;
+}
+.forecast{
+    background-color: darkgrey;
+}
+
+.results{
+    background-color: darkgrey;
 }
