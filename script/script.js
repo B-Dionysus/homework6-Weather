@@ -140,6 +140,7 @@ function displayForecast(response){
         thisDay.append($("<p>").text("Humidity: "+humid+"%"));
 
         $("#forecast-container").append(thisDay);
+        $("#five-day-head").text("5-Day Forecast");
     }
 }
 function displayUserCity(response){
@@ -150,25 +151,19 @@ function displayUserCity(response){
     userLat=response.lat;
     userLon=response.lon;
 
-    console.log("fLat="+foreignLat);
-    console.log("fLon="+foreignLon);
-    console.log("fT="+foreignTemp);
-    console.log("fW="+foreignW);
-    console.log("uLat="+userLat);
-    console.log("uLon="+userLon);
-    console.log("uT="+userTemp);
-    console.log("uW="+userW);
+    
+    // The openWeather API gives geocoörds that are ever so slightly different from the
+    // ones provided by the browser. But we don't want to tell the user that 
+    // Chicago is just as hot and just a cloudy as Chicago. That's not useful!
     var latDiff=Math.abs(userLat-foreignLat);
     var lonDiff=Math.abs(userLon-foreignLon);
-    console.log(latDiff);
-    console.log(lonDiff);
     if(latDiff>.2 && lonDiff>.2){
         var msg="";
         console.log("Dopin' it");
         if(foreignTemp>userTemp) msg="It's hotter there than it is here";
         else if(foreignTemp<userTemp) msg="It's colder there than it is here"
         else msg="It's the same temperature";
-        if(foreignW===userW) msg+=", and just as much "+userW.toLowerCase()+".";
+        if(foreignW===userW) msg+=", with similar "+userW.toLowerCase()+".";
         else if(foreignW!=userW){
             if(userW==="Clear")
                 msg+=", with more "+foreignW.toLowerCase()+".";
